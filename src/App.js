@@ -29,7 +29,12 @@ function App() {
   };
 
   const handleVolumeChange = (volume) => {
-    // Do something with the volume level
+    if (volume >= 0.6) {
+      //incrementer les pourcentages tout les x ms
+      setProgress(parseInt(volume * 50));
+    } else {
+      // jsp
+    }
   };
 
   const handleKeyPress = async (event) => {
@@ -55,7 +60,7 @@ function App() {
   useEffect(() => {
     window.addEventListener('keydown', handleKeyPress);
 
-    console.log('toto');
+    // console.log('toto');
     return () => window.removeEventListener('keydown', () => handleKeyPress);
   });
 
