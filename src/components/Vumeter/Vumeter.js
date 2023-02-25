@@ -28,7 +28,10 @@ const VUMeter = ({
         const average =
           dataArray.reduce((acc, val) => acc + val, 0) / bufferLength;
         const volume = average / 255;
+
         setVolumeLevel(volume);
+        // console.log(volume);
+
         onVolumeChange(volume);
         requestAnimationFrame(updateVolume);
       };
@@ -51,9 +54,27 @@ const VUMeter = ({
   //     onStop();
   //   };
 
+  const generateView = () => {
+    const view = [];
+    for (let i = 25; i >= 1; i--) {
+      view.push(
+        <div
+          key={i}
+          id={i}
+          className="h-[7px] rounded-full w-[30px] mb-[6px]"
+          style={{
+            backgroundColor: volumeLevel * 100 >= i * 4 ? 'red' : 'white',
+          }}
+        ></div>
+      );
+    }
+    return view;
+  };
+
   return (
     <div>
-      <meter className="meter" value={volumeLevel} min="0" max="1" />
+      <div className="flex flex-col">{generateView().map((item) => item)}</div>
+      {/* <meter className="meter" value={volumeLevel} min="0" max="1" /> */}
     </div>
   );
 };

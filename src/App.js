@@ -10,11 +10,12 @@ function App() {
   const [isFirstPage, setIsFirstPage] = useState(true);
   const [presentation, setPresentation] = useState(0);
   const [progress, setProgress] = useState(26);
+  const [volume, setVolume] = useState(0);
 
   const startPresentation = () => {
     setTimeout(() => {
       setIsFirstPage(false);
-    }, 5000);
+    }, 10);
   };
 
   const handleStart = async () => {
@@ -31,7 +32,8 @@ function App() {
   const handleVolumeChange = (volume) => {
     if (volume >= 0.6) {
       //incrementer les pourcentages tout les x ms
-      setProgress(parseInt(volume * 50));
+      console.log('toto');
+      if (progress < 100) setProgress((progress) => progress + 1);
     } else {
       // jsp
     }
@@ -83,21 +85,23 @@ function App() {
             : ''
         }`}
       >
-        <div className="text-white absolute top-1/2 left-1/2 w-[1200px] flex flex-col items-center justify-center translate-x-[-50%] translate-y-[-50%]">
+        <div className="text-white absolute top-1/2 left-1/2 w-[1000px] flex flex-col items-center justify-center translate-x-[-50%] translate-y-[-50%]">
           {calibrage <= 1 ? (
             <div className="text-4xl text-center font-bold">
               {calibrage === 0
                 ? "Appuyez sur la barre espace pour initialiser l'application."
                 : 'Tapez dans vos mains pour calibrer le micro. Appuyez sur la barre espace pour lancer la présentation.'}
               {calibrage === 1 && (
-                <VUMeter
-                  audioStream={audioStream}
-                  audioSource={audioSource}
-                  audioContext={audioContext}
-                  onVolumeChange={handleVolumeChange}
-                  setAudioSource={setAudioSource}
-                  setAudioContext={setAudioContext}
-                />
+                <div className="mx-auto w-fit mt-[50px]">
+                  <VUMeter
+                    audioStream={audioStream}
+                    audioSource={audioSource}
+                    audioContext={audioContext}
+                    onVolumeChange={handleVolumeChange}
+                    setAudioSource={setAudioSource}
+                    setAudioContext={setAudioContext}
+                  />
+                </div>
               )}
             </div>
           ) : (
@@ -125,7 +129,7 @@ function App() {
               <div className="relative">
                 {!isFirstPage && (
                   <>
-                    <div className="absolute left-0 mr-[80px]">
+                    <div className="absolute left-0 translate-y-[-50%] mt-[-30px]">
                       <VUMeter
                         audioStream={audioStream}
                         audioSource={audioSource}
