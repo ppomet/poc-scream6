@@ -4,55 +4,50 @@ const VUMeter = ({
   audioStream,
   audioSource,
   audioContext,
+  maxFactor,
   onVolumeChange,
   setAudioSource,
-  setAudioContext,
+  startHandler,
+  stopHandler,
 }) => {
   const [volumeLevel, setVolumeLevel] = useState(0);
 
   useEffect(() => {
-    if (audioStream) {
-      const context = new AudioContext();
-      const source = context.createMediaStreamSource(audioStream);
-      const analyser = context.createAnalyser();
-      analyser.fftSize = 256;
-      source.connect(analyser);
-      setAudioContext(context);
-      setAudioSource(source);
+    console.log('audiostream in vuemeter');
+    console.info(audioStream);
 
-      const bufferLength = analyser.frequencyBinCount;
-      const dataArray = new Uint8Array(bufferLength);
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
+    audioSource.connect(analyser);
 
-      const updateVolume = () => {
-        analyser.getByteFrequencyData(dataArray);
-        const average =
-          dataArray.reduce((acc, val) => acc + val, 0) / bufferLength;
-        const volume = average / 255;
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
 
-        setVolumeLevel(volume);
-        // console.log(volume);
-
-        onVolumeChange(volume);
-        requestAnimationFrame(updateVolume);
-      };
-
+    const updateVolume = () => {
+      analyser.getByteFrequencyData(dataArray);
+      const average =
+        dataArray.reduce((acc, val) => acc + val, 0) / bufferLength;
+      // const volume = average / 255; // oldway
+      let volume = (average / 255) * (maxFactor + 0.1);
+      if (volume > 1) {
+        volume = 1;
+      }
+      setVolumeLevel(volume);
+      onVolumeChange(volume);
       requestAnimationFrame(updateVolume);
-    } else {
-      setAudioContext(null);
-      setAudioSource(null);
-      setVolumeLevel(0);
-    }
-  }, [audioStream]);
+    };
 
-  //   const handleStart = async () => {
-  //     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  //     onStart(stream);
-  //   };
+    requestAnimationFrame(updateVolume);
 
-  //   const handleStop = () => {
-  //     source.disconnect();
-  //     onStop();
-  //   };
+    // else {
+    //   setAudioContext(null);
+    //   setAudioSource(null);
+    //   setVolumeLevel(0);
+    // }
+    return () => {
+      stopHandler();
+    };
+  }, []);
 
   const generateView = () => {
     const view = [];
