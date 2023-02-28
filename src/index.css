@@ -1,8 +1,13 @@
+@font-face {
+  font-family: 'UniversCondensedBold';
+  src: local('UniversCondensedBold'),
+    url('./fonts/Univers_Condensed_Bold.ttf') format('truetype');
+  font-weight: bold;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'UniversCondensedBold';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: url(/public/background.png);
