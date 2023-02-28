@@ -24,9 +24,9 @@ function App() {
   let waitFlag = false;
   let volumeThreshold = 0.05;
   let progressTimer = 100;
-  let progressQuantityThreshold = 1;
+  let progressQuantityThreshold = 4;
   let progressQuantity = 0;
-  const timeBetweenSlides = 50;
+  const timeBetweenSlides = 3000;
 
   const startPresentation = () => {
     setTimeout(() => {
@@ -97,9 +97,11 @@ function App() {
     setAudioStream(null);
   };
 
-  //Progress evolve to ~693% before re-actaualizing
+  useEffect(() => {}, [progress]);
+  //Progress evolve to ~693% <> ~2680% before re-actaualizing
   const handleVolumeChange = (volume) => {
     if (!waitFlag && progress < 100) {
+      console.log(`prog before setTimeout ${progress}`);
       waitFlag = true;
       setTimeout(() => {
         waitFlag = false;
@@ -108,7 +110,7 @@ function App() {
             progressQuantity += 1;
           } else {
             progressQuantity = 0;
-            console.log(`prog=(${progress})`);
+            console.log(`inside hVC progress=(${progress})`);
             if (progress < 100) setProgress((progress) => progress + 1);
           }
         }
@@ -178,7 +180,9 @@ function App() {
                       style={{
                         width: (progress < 100 ? progress : 100) * 0.98 + '%',
                       }}
-                      className="bg-[red] h-[42px] mb-[4px] mx-[4px] mt-[3px] drop-shadow-lg"
+                      className={`${
+                        progress <= 100 ? 'bg-[red]' : ' bg-[green]'
+                      }  h-[42px] mb-[4px] mx-[4px] mt-[3px] drop-shadow-lg`}
                     ></div>
                     <div className="text-4xl mt-[-2px] font-bold absolute top-1/2 left-1/2 text-center translate-x-[-50%] translate-y-[-50%]">
                       {progress < 100 ? progress : 100}%
