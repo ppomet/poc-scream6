@@ -11,35 +11,31 @@ function App() {
   const [presentation, setPresentation] = useState(0);
   const [progress, setProgress] = useState(0);
   const [volume, setVolume] = useState(0);
-  const [maxFactor, setMaxFactor] = useState(0.0);
+  const [maxVolumeCorrection, setmaxVolumeCorrection] = useState(0);
   const [isAudioStarted, setIsAudioStarted] = useState(false);
 
-  let debugFlag = false;
-  let volumeFactor = 0.6;
-  let volumeThreshold = 0.3;
+  let waitFlag = false;
+  let volumeThreshold = 0.5;
   let progressTimer = 100;
   let progressQuantityThreshold = 10;
   let progressQuantity = 0;
-  // let maxFactor = 0;
-  // const setMaxFactor = (value) => {
-  //   maxFactor = value;
-  // };
+  let maxVol = 0;
 
   const startPresentation = () => {
     setTimeout(() => {
       setIsFirstPage(false);
-    }, 10);
+    }, 5000);
   };
 
   const micCalibration = (volume) => {
     if (calibrage === 1) {
-      console.log(`calibration vol=(${volume}) max=(${maxFactor})`);
-      if (volume >= maxFactor) {
-        setMaxFactor(volume);
-        // maxFactor = volume;
+      // console.log(`calibration vol=(${volume}) max=(${maxVolumeCorrection})`);
+      if (volume >= maxVol) {
+        maxVol = volume;
+        setmaxVolumeCorrection(volume);
+        console.log(`calibration correction (${maxVol})`);
+        // maxVolumeCorrection = volume;
       }
-    } else {
-      console.log('nope');
     }
   };
 
@@ -72,7 +68,7 @@ function App() {
   };
 
   const handleStart = async () => {
-    console.log('handlestart');
+    console.log('--- handlestart ---');
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
         mandatory: {
@@ -83,26 +79,26 @@ function App() {
         },
       },
     });
-    console.log('-------------- audio Stream -----------------');
-    console.log(stream);
+    // console.log('-------------- audio Stream -----------------');
+    // console.log(stream);
     setAudioStream(stream);
   };
 
   useEffect(() => {
-    const bob = async () => {
+    const asyncFix = async () => {
       if (audioStream !== null) {
         const context = await new AudioContext();
-        console.log('----------- audio context -------------------');
-        console.log(context);
+        // console.log('----------- audio context -------------------');
+        // console.log(context);
         setAudioContext(context);
         const source = await context.createMediaStreamSource(audioStream);
-        console.log('----------------- audio source --------------');
-        console.log(source);
+        // console.log('----------------- audio source --------------');
+        // console.log(source);
         setAudioSource(source);
         setIsAudioStarted(true);
       }
     };
-    bob();
+    asyncFix();
   }, [audioStream]);
 
   const handleStop = () => {
@@ -114,28 +110,21 @@ function App() {
   };
 
   const handleVolumeChange = (volume) => {
-    console.log(`WTF ${maxFactor}`);
-    if (!debugFlag && progress < 100) {
-      //calibrage dans les conditions ??
-      console.log(`calib status = ${debugFlag}`);
-      debugFlag = true;
+    if (!waitFlag && progress < 100) {
+      waitFlag = true;
       setTimeout(() => {
-        debugFlag = false;
+        waitFlag = false;
         if (volume >= volumeThreshold) {
           if (progressQuantity < progressQuantityThreshold) {
-            console.info('bobby');
             progressQuantity += 1;
           } else {
-            console.info('dan dao');
             progressQuantity = 0;
             if (progress < 100) setProgress((progress) => progress + 1);
           }
         }
       }, progressTimer);
+    } else {
     }
-    // console.log(
-    //   `progress internal = ${progressQuantity}/${progressQuantityThreshold}`
-    // );
   };
 
   const handleKeyPress = async (event) => {
@@ -207,11 +196,8 @@ function App() {
                       audioStream={audioStream}
                       audioSource={audioSource}
                       audioContext={audioContext}
-                      maxFactor={maxFactor}
+                      isCalibration={true}
                       onVolumeChange={micCalibration}
-                      setAudioSource={setAudioSource}
-                      setAudioContext={setAudioContext}
-                      stopHandler={handleStop}
                     />
                   )}
                 </div>
@@ -248,6 +234,9 @@ function App() {
                           audioStream={audioStream}
                           audioSource={audioSource}
                           audioContext={audioContext}
+                          maxVolumeCorrection={maxVolumeCorrection}
+                          setmaxVolumeCorrection={setmaxVolumeCorrection}
+                          isCalibration={false}
                           onVolumeChange={handleVolumeChange}
                         />
                       )}

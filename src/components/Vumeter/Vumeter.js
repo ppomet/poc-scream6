@@ -1,53 +1,81 @@
 import React, { useState, useEffect } from 'react';
 
 const VUMeter = ({
-  audioStream,
   audioSource,
   audioContext,
-  maxFactor,
+  isCalibration,
+  maxVolumeCorrection,
+  setmaxVolumeCorrection,
   onVolumeChange,
-  setAudioSource,
-  startHandler,
-  stopHandler,
 }) => {
   const [volumeLevel, setVolumeLevel] = useState(0);
 
   useEffect(() => {
-    console.log('audiostream in vuemeter');
-    console.info(audioStream);
-
+    let myReq;
     const analyser = audioContext.createAnalyser();
     analyser.fftSize = 256;
     audioSource.connect(analyser);
-
     const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
 
+    let factorCorrection = (1 / maxVolumeCorrection) * 1;
+    if (factorCorrection < 1) {
+      alert('correction factor error');
+      factorCorrection = 1;
+    }
+    console.log(
+      `correction Fact (${factorCorrection}) max Vol (${maxVolumeCorrection}))`
+    );
+    if (!isCalibration) {
+      console.log({ maxVolumeCorrection, factorCorrection });
+      //   debugger;
+    }
+
     const updateVolume = () => {
       analyser.getByteFrequencyData(dataArray);
+      let volume;
       const average =
         dataArray.reduce((acc, val) => acc + val, 0) / bufferLength;
-      // const volume = average / 255; // oldway
-      let volume = (average / 255) * (maxFactor + 0.1);
-      if (volume > 1) {
-        volume = 1;
+      if (isCalibration) {
+        volume = average / 255;
+      } else {
+        volume = (average / 255) * factorCorrection /*- 0.15*/;
+        if (volume > 1) {
+          console.warn(
+            `volume got to high (${volume}) fact(${maxVolumeCorrection})`
+          );
+          setmaxVolumeCorrection((maxVolumeCorrection) => {
+            if (maxVolumeCorrection < 1) {
+              let flatCorrected = (maxVolumeCorrection += 0.05);
+              let averageCorrected =
+                (maxVolumeCorrection + average / 255) / 2 - 0.1;
+              console.log(
+                `maxVolumeCorrection flat(${flatCorrected}) avg(${averageCorrected})`
+              );
+              console.log(`average 255 (${average / 255})`);
+              console.log(
+                `highest value ${Math.max(flatCorrected, averageCorrected)}`
+              );
+              debugger;
+              return flatCorrected;
+            } else if (maxVolumeCorrection >= 1) {
+              return 1;
+            }
+          });
+          volume = 1;
+        }
       }
       setVolumeLevel(volume);
       onVolumeChange(volume);
-      requestAnimationFrame(updateVolume);
+      myReq = requestAnimationFrame(updateVolume);
     };
 
-    requestAnimationFrame(updateVolume);
-
-    // else {
-    //   setAudioContext(null);
-    //   setAudioSource(null);
-    //   setVolumeLevel(0);
-    // }
+    myReq = requestAnimationFrame(updateVolume);
     return () => {
-      stopHandler();
+      cancelAnimationFrame(myReq);
+      //   stopHandler();
     };
-  }, []);
+  }, [maxVolumeCorrection]);
 
   const generateView = () => {
     const view = [];
