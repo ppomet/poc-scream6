@@ -3,12 +3,50 @@ import React, { useState, useEffect } from 'react';
 const VUMeter = ({
   audioSource,
   audioContext,
-  isCalibration,
-  maxVolumeCorrection,
-  setmaxVolumeCorrection,
+  correctionFactors,
+  setAudioCorrection,
   onVolumeChange,
+  lastTime,
+  setLastTime,
+  corrIterations,
+  setCorrIterations,
 }) => {
   const [volumeLevel, setVolumeLevel] = useState(0);
+
+  const autoCorrection = (average, time) => {
+    if (time > lastTime + 300) {
+      console.warn('debouncing animationFrame');
+    }
+    let obj = { ...correctionFactors };
+    console.debug({ obj });
+    obj.current = 1 / obj.maxVol - obj.offset;
+
+    let flatCorrected = (obj.maxVol += obj.flatFactor);
+    let averageCorrected =
+      (obj.maxVol + average / 255) / 2 - obj.flatFactor * 1.5;
+    console.debug(
+      `maxVolumeCorrection flat(${flatCorrected}) avg(${averageCorrected})`
+    );
+    console.debug(`average 255 (${average / 255})`);
+    let maxError = Math.max(flatCorrected, averageCorrected);
+    console.debug(
+      `maxError ${maxError} vol margin (${average / 255 + obj.margin})`
+    );
+    if (maxError >= average / 255 + obj.margin) {
+      console.debug('we didnt go over margin');
+    } else {
+      console.info(
+        `last corr maxVol(${parseFloat(obj.maxVol).toFixed(
+          3
+        )} avgFrom last(${parseFloat(average / 255).toFixed(3)} iterations (${
+          corrIterations + 1
+        })`
+      );
+      setCorrIterations((corr) => (corr += 1));
+      setAudioCorrection(() => obj);
+      setLastTime(() => time);
+    }
+  };
 
   useEffect(() => {
     let myReq;
@@ -18,52 +56,17 @@ const VUMeter = ({
     const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
 
-    let factorCorrection = (1 / maxVolumeCorrection) * 1;
-    if (factorCorrection < 1) {
-      alert('correction factor error');
-      factorCorrection = 1;
-    }
-    console.log(
-      `correction Fact (${factorCorrection}) max Vol (${maxVolumeCorrection}))`
-    );
-    if (!isCalibration) {
-      console.log({ maxVolumeCorrection, factorCorrection });
-      //   debugger;
-    }
-
-    const updateVolume = () => {
+    const updateVolume = (time) => {
       analyser.getByteFrequencyData(dataArray);
       let volume;
       const average =
         dataArray.reduce((acc, val) => acc + val, 0) / bufferLength;
-      if (isCalibration) {
-        volume = average / 255;
-      } else {
-        volume = (average / 255) * factorCorrection /*- 0.15*/;
-        if (volume > 1) {
-          console.warn(
-            `volume got to high (${volume}) fact(${maxVolumeCorrection})`
-          );
-          setmaxVolumeCorrection((maxVolumeCorrection) => {
-            if (maxVolumeCorrection < 1) {
-              let flatCorrected = (maxVolumeCorrection += 0.05);
-              let averageCorrected =
-                (maxVolumeCorrection + average / 255) / 2 - 0.1;
-              console.log(
-                `maxVolumeCorrection flat(${flatCorrected}) avg(${averageCorrected})`
-              );
-              console.log(`average 255 (${average / 255})`);
-              console.log(
-                `highest value ${Math.max(flatCorrected, averageCorrected)}`
-              );
-              debugger;
-              return flatCorrected;
-            } else if (maxVolumeCorrection >= 1) {
-              return 1;
-            }
-          });
-          volume = 1;
-        }
+      volume = (average / 255) * correctionFactors.current;
+      // console.info(`vol(${volume})`);
+      if (volume > 1) {
+        // console.warn(`volume got to high (${volume})`);
+        autoCorrection(average, time);
+        volume = 1;
       }
       setVolumeLevel(volume);
       onVolumeChange(volume);
@@ -73,9 +76,10 @@ const VUMeter = ({
     myReq = requestAnimationFrame(updateVolume);
     return () => {
       cancelAnimationFrame(myReq);
+      // debugger;
       //   stopHandler();
     };
-  }, [maxVolumeCorrection]);
+  }, [correctionFactors]);
 
   const generateView = () => {
     const view = [];

@@ -6,37 +6,32 @@ function App() {
   const [audioStream, setAudioStream] = useState(null);
   const [audioContext, setAudioContext] = useState(null);
   const [audioSource, setAudioSource] = useState(null);
-  const [calibrage, setCalibrage] = useState(0);
   const [isFirstPage, setIsFirstPage] = useState(true);
   const [presentation, setPresentation] = useState(0);
   const [progress, setProgress] = useState(0);
-  const [volume, setVolume] = useState(0);
-  const [maxVolumeCorrection, setmaxVolumeCorrection] = useState(0);
   const [isAudioStarted, setIsAudioStarted] = useState(false);
+  const [lastTime, setLastTime] = useState(0);
+  const [corrIterations, setCorrIterations] = useState(0);
+  const [audioCorrection, setAudioCorrection] = useState({
+    flatFactor: 0.05,
+    averageFactor: 1, // ??
+    current: 2,
+    maxVol: 0.5,
+    offset: 0.1,
+    margin: 0.05,
+  });
 
   let waitFlag = false;
-  let volumeThreshold = 0.5;
+  let volumeThreshold = 0.05;
   let progressTimer = 100;
-  let progressQuantityThreshold = 10;
+  let progressQuantityThreshold = 1;
   let progressQuantity = 0;
-  let maxVol = 0;
+  const timeBetweenSlides = 50;
 
   const startPresentation = () => {
     setTimeout(() => {
       setIsFirstPage(false);
-    }, 5000);
-  };
-
-  const micCalibration = (volume) => {
-    if (calibrage === 1) {
-      // console.log(`calibration vol=(${volume}) max=(${maxVolumeCorrection})`);
-      if (volume >= maxVol) {
-        maxVol = volume;
-        setmaxVolumeCorrection(volume);
-        console.log(`calibration correction (${maxVol})`);
-        // maxVolumeCorrection = volume;
-      }
-    }
+    }, timeBetweenSlides);
   };
 
   const textThresold = () => {
@@ -68,7 +63,6 @@ function App() {
   };
 
   const handleStart = async () => {
-    console.log('--- handlestart ---');
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
         mandatory: {
@@ -79,8 +73,6 @@ function App() {
         },
       },
     });
-    // console.log('-------------- audio Stream -----------------');
-    // console.log(stream);
     setAudioStream(stream);
   };
 
@@ -88,12 +80,8 @@ function App() {
     const asyncFix = async () => {
       if (audioStream !== null) {
         const context = await new AudioContext();
-        // console.log('----------- audio context -------------------');
-        // console.log(context);
         setAudioContext(context);
         const source = await context.createMediaStreamSource(audioStream);
-        // console.log('----------------- audio source --------------');
-        // console.log(source);
         setAudioSource(source);
         setIsAudioStarted(true);
       }
@@ -109,6 +97,8 @@ function App() {
     setAudioStream(null);
   };
 
+  useEffect(() => {}, [progress]);
+
   const handleVolumeChange = (volume) => {
     if (!waitFlag && progress < 100) {
       waitFlag = true;
@@ -119,34 +109,25 @@ function App() {
             progressQuantity += 1;
           } else {
             progressQuantity = 0;
+            console.log(`prog=(${progress})`);
             if (progress < 100) setProgress((progress) => progress + 1);
           }
         }
       }, progressTimer);
-    } else {
+    } else if (progress >= 100) {
+      console.log(`triggered progress 100%(${progress})`);
+      handleStop();
     }
   };
 
   const handleKeyPress = async (event) => {
     if (event.key === ' ') {
-      if (calibrage === 0) {
-        setCalibrage(() => 1);
+      if (presentation === 0) {
         await handleStart();
-      } else if (calibrage === 1) {
-        setCalibrage(() => 2);
-      } else if (presentation === 0) {
         setPresentation(() => 1); // start presentation
         startPresentation();
       }
     }
-    // else if (event.key === 'v') {
-    //   if (!audioStream) {
-    //     await handleStart();
-    //   } else {
-    //     handleStop();
-    //   }
-    //   console.log(`"${event.key}"`);
-    // }
   };
 
   useEffect(() => {
@@ -184,82 +165,65 @@ function App() {
         }`}
       >
         <div className="text-white absolute top-1/2 left-1/2 w-[1000px] flex flex-col items-center justify-center translate-x-[-50%] translate-y-[-50%]">
-          {calibrage <= 1 ? (
-            <div className="text-4xl text-center font-bold">
-              {calibrage === 0
-                ? "Appuyez sur la barre espace pour initialiser l'application."
-                : 'Tapez dans vos mains pour calibrer le micro. Appuyez sur la barre espace pour lancer la présentation.'}
-              {calibrage === 1 && (
-                <div className="mx-auto w-fit mt-[50px]">
-                  {isAudioStarted && (
-                    <VUMeter
-                      audioStream={audioStream}
-                      audioSource={audioSource}
-                      audioContext={audioContext}
-                      isCalibration={true}
-                      onVolumeChange={micCalibration}
-                    />
-                  )}
+          <div className="w-full">
+            <div className="text-3xl whitespace-nowrap font-bold text-center w-full">
+              {isFirstPage ? (
+                firstPageTexts[presentation]
+              ) : (
+                <div className="text-center">
+                  <div className="absolute text-4xl font-bold left-1/2 translate-x-[-50%] mt-[-70px]">
+                    {textThresold()}
+                  </div>
+                  <div className="w-[440px] mx-auto border-[1.2px] border-white h-[50px] ring-0 relative">
+                    <div
+                      style={{
+                        width: (progress < 100 ? progress : 100) * 0.98 + '%',
+                      }}
+                      className="bg-[red] h-[42px] mb-[4px] mx-[4px] mt-[3px] drop-shadow-lg"
+                    ></div>
+                    <div className="text-4xl mt-[-2px] font-bold absolute top-1/2 left-1/2 text-center translate-x-[-50%] translate-y-[-50%]">
+                      {progress < 100 ? progress : 100}%
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
-          ) : (
-            <div className="w-full">
-              <div className="text-3xl whitespace-nowrap font-bold text-center w-full">
-                {isFirstPage ? (
-                  firstPageTexts[presentation]
-                ) : (
-                  <div className="text-center">
-                    <div className="absolute text-4xl font-bold left-1/2 translate-x-[-50%] mt-[-70px]">
-                      {textThresold()}
-                    </div>
-                    <div className="w-[430px] mx-auto border-[0.5px] border-white h-[50px] ring-0 relative">
-                      <div
-                        style={{ width: progress + '%' }}
-                        className="bg-[red] h-[42px] mb-[4px] mx-[4px] mt-[3px] drop-shadow-lg"
-                      ></div>
-                      <div className="text-4xl mt-[-2px] font-bold absolute top-1/2 left-1/2 text-center translate-x-[-50%] translate-y-[-50%]">
-                        {progress}%
-                      </div>
-                    </div>
+            <div className="relative">
+              {!isFirstPage && (
+                <>
+                  <div className="absolute left-0 translate-y-[-50%] mt-[-30px]">
+                    {isAudioStarted && (
+                      <VUMeter
+                        audioSource={audioSource}
+                        audioContext={audioContext}
+                        correctionFactors={audioCorrection}
+                        lastTime={lastTime}
+                        corrIterations={corrIterations}
+                        setCorrIterations={setCorrIterations}
+                        setLastTime={setLastTime}
+                        setAudioCorrection={setAudioCorrection}
+                        onVolumeChange={handleVolumeChange}
+                      />
+                    )}
                   </div>
-                )}
-              </div>
-              <div className="relative">
-                {!isFirstPage && (
-                  <>
-                    <div className="absolute left-0 translate-y-[-50%] mt-[-30px]">
-                      {isAudioStarted && (
-                        <VUMeter
-                          audioStream={audioStream}
-                          audioSource={audioSource}
-                          audioContext={audioContext}
-                          maxVolumeCorrection={maxVolumeCorrection}
-                          setmaxVolumeCorrection={setmaxVolumeCorrection}
-                          isCalibration={false}
-                          onVolumeChange={handleVolumeChange}
-                        />
-                      )}
-                    </div>
-                    <div className="text-5xl absolute bottom-0 mb-[300px] left-1/2 translate-x-[-50%] whitespace-nowrap text-center w-full font-bold">
-                      <span className="text-[red]">CRIEZ</span> POUR LANCER LE
-                      FILM.
-                    </div>
-                  </>
-                )}
-                <div className="absolute top-0 w-full mt-[80px]">
-                  <img
-                    className="mx-auto  w-[390px]"
-                    src="/scream.png"
-                    alt="scream"
-                  />
-                  <div className="text-center font-bold text-xl">
-                    PARTAGEZ VOS RÉACTIONS #SCREAMVI
+                  <div className="text-5xl absolute bottom-0 mb-[300px] left-1/2 translate-x-[-50%] whitespace-nowrap text-center w-full font-bold">
+                    <span className="text-[red]">CRIEZ</span> POUR LANCER LE
+                    FILM.
                   </div>
+                </>
+              )}
+              <div className="absolute top-0 w-full mt-[80px]">
+                <img
+                  className="mx-auto  w-[390px]"
+                  src="/scream.png"
+                  alt="scream"
+                />
+                <div className="text-center font-bold text-xl">
+                  PARTAGEZ VOS RÉACTIONS #SCREAMVI
                 </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
