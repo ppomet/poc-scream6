@@ -97,8 +97,7 @@ function App() {
     setAudioStream(null);
   };
 
-  useEffect(() => {}, [progress]);
-
+  //Progress evolve to ~693% before re-actaualizing
   const handleVolumeChange = (volume) => {
     if (!waitFlag && progress < 100) {
       waitFlag = true;
@@ -116,7 +115,7 @@ function App() {
       }, progressTimer);
     } else if (progress >= 100) {
       console.log(`triggered progress 100%(${progress})`);
-      handleStop();
+      // handleStop();
     }
   };
 
