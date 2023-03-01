@@ -11,16 +11,10 @@ function App() {
   const [presentation, setPresentation] = useState(0);
   const [progressConf, setProgressConf] = useState({
     // prod values
-    increment: 0.5,
-    quantity: 0,
-    threshold: 20,
+    increment: 0.5, //0.5
+    quantity: 0, //0
+    threshold: 20, //20
   });
-  // const [progressConf, setProgressConf] = useState({
-  // dev values
-  //   increment: 1,
-  //   quantity: 0,
-  //   threshold: 5,
-  // });
   const progConfRef = useRef(progressConf);
   const [presText, setPresText] = useState('');
   const [progress, setProgress] = useState(100);
@@ -29,32 +23,21 @@ function App() {
   const [isAudioStarted, setIsAudioStarted] = useState(false);
   const [lastTime, setLastTime] = useState(0);
   const [corrIterations, setCorrIterations] = useState(0);
-  // const [audioCorrection, setAudioCorrection] = useState({ // prod values
-  //   flatFactor: 0.05,
-  //   current: 2,
-  //   maxVol: 0.5,
-  //   offset: 0.1,
-  //   margin: 0.05,
-  // });
 
   const [audioCorrection, setAudioCorrection] = useState({
-    // dev values
-    flatFactor: 0.05,
-    current: 2,
-    maxVol: 0.7,
-    offset: 0.1,
-    margin: 0.05,
+    // prod values
+    flatFactor: 0.05, //0.05
+    current: 2, //2
+    maxVol: 0.7, //0.7
+    offset: 0.1, //0.1
+    margin: 0.05, //0.05
   });
 
   let waitFlag = false;
-  let volumeThreshold = 0.85; // prod values
-  let progressTimer = 120;
-  const timeBetweenSlides = 7000; // peut etre plus
-  //mettre 6 secondes de limiye par palier
-
-  // let volumeThreshold = 0.05; //dev values
-  // let progressTimer = 100;
-  // const timeBetweenSlides = 1200;
+  // prod values:
+  let volumeThreshold = 0.85; //  0.85
+  let progressTimer = 140; // 140
+  const timeBetweenSlides = 8000; // 8000
 
   const startPresentation = () => {
     setTimeout(() => {
@@ -106,34 +89,6 @@ function App() {
     }
   };
 
-  // const textThresold = () => { // old code
-  //   let index;
-  //   if (progress < 6) {
-  //     index = 0;
-  //   } else if (progress < 14) {
-  //     index = 1;
-  //   } else if (progress < 23) {
-  //     index = 2;
-  //   } else if (progress < 36) {
-  //     index = 3;
-  //   } else if (progress < 42) {
-  //     index = 4;
-  //   } else if (progress < 59) {
-  //     index = 5;
-  //   } else if (progress < 66) {
-  //     index = 6;
-  //   } else if (progress < 78) {
-  //     index = 7;
-  //   } else if (progress < 89) {
-  //     index = 8;
-  //   } else if (progress < 100) {
-  //     index = 9;
-  //   } else {
-  //     index = 10;
-  //   }
-  //   return secondPageTexts[index];
-  // };
-
   const handleStart = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
@@ -173,13 +128,11 @@ function App() {
     // fix of progress inside a setTimeout
     progressRef.current = progress;
     progConfRef.current = progressConf;
-    // console.log(`call from effect`);
     segmentAndProgress();
   }, [progress, progressConf]);
 
   const handleVolumeChange = (volume) => {
     if (!waitFlag && progressRef.current < 100) {
-      // console.log(`call from hVC`);
       segmentAndProgress();
       waitFlag = true;
       setTimeout(() => {
@@ -187,19 +140,11 @@ function App() {
         if (volume >= volumeThreshold) {
           if (progConfRef.current.quantity < progConfRef.current.threshold) {
             setProgressConf((progressConf) => {
-              // console.log({ ref: progConfRef.current });
-              // console.log({
-              //   new: {
-              //     ...progressConf,
-              //     quantity: progressConf.quantity + progressConf.threshold,
-              //   },
-              // });
               return {
                 ...progressConf,
                 quantity: progressConf.quantity + progressConf.threshold,
               };
             });
-            // progressQuantity += progressIncrement;
           } else {
             setProgressConf((progressConf) => {
               return {
@@ -207,16 +152,14 @@ function App() {
                 quantity: 0,
               };
             });
-            // progressQuantity = 0;
             if (progressRef.current < 100)
               setProgress((progress) => progress + 1);
           }
         }
       }, progressTimer);
     } else if (progressRef.current >= 100) {
-      // console.log(`triggered progress 100%(${progressRef.current})`);
       endPresentation();
-      // handleStop();
+      // handleStop(); // sometimes in the future I may debug this function ...
     }
   };
 
@@ -224,7 +167,7 @@ function App() {
     if (event.key === ' ') {
       if (presentation === 0) {
         await handleStart();
-        setPresentation(() => 1); // start presentation
+        setPresentation(() => 1);
         startPresentation();
       }
     }
@@ -236,6 +179,12 @@ function App() {
     return () => window.removeEventListener('keydown', () => handleKeyPress);
   });
 
+  const redText = 'CRIEZ';
+  const afterRedText = ` ${'POUR LANCER LE FILM.'}`;
+
+  const footText = 'PARTAGEZ VOS RÉACTIONS #SCREAMVI';
+  const endText = 'NOUVELLE VILLE. NOUVELLES RÈGLES.';
+
   const firstPageTexts = [
     'Préparez vos cordes vocales.',
     'Vous allez bientôt vivre une expérience inédite.',
@@ -243,17 +192,19 @@ function App() {
 
   const secondPageTexts = [
     'FAITES TREMBLER LA SALLE...',
-    'CRIEZ COMME SI VOTRE VIE EN DEPENDAIT !',
-    "C'EST CA QUE VOUS APPELEZ CRIER ?", // cedille
-    'LACHEZ VOUS !',
+    'CRIEZ COMME SI VOTRE VIE EN DÉPENDAIT !',
+    'C’EST ÇA QUE VOUS APPELEZ CRIER ?',
+    'LÂCHEZ-VOUS !',
     'ON ENTEND LES MOUCHES VOLER...',
-    "C'EST CA VOTRE MAXIMUM ?",
+    'C’EST ÇA VOTRE MAXIMUM ?',
     'ON NE VA PAS Y PASSER LA NUIT !',
     'VOUS VOULEZ VRAIMENT VOIR LE FILM ?',
-    "VOUS N'AVEZ PLUS DE VOIX ?",
-    'BAH ALORS, ON FAIBLIT !',
+    'VOUS N’AVEZ PLUS DE VOIX ?',
+    'BAH ALORS, ON FAIBLIT ?',
     'LE FILM PEUT COMMENCER.',
   ];
+
+  // {isLastPage ? `${''}` : `${''}` }
 
   return (
     <div className="App">
@@ -266,7 +217,7 @@ function App() {
       >
         <div className="text-white absolute top-1/2 left-1/2 w-[1000px] flex flex-col items-center justify-center translate-x-[-50%] translate-y-[-50%]">
           <div className="w-full">
-            <div className="text-3xl whitespace-nowrap font-bold text-center w-full">
+            <div className="text-6xl whitespace-nowrap font-bold text-center w-full">
               {isFirstPage ? (
                 firstPageTexts[presentation]
               ) : (
@@ -277,7 +228,10 @@ function App() {
                     </div>
                   )}
                   {!isLastPage && (
-                    <div className="w-[440px] mx-auto border-[1.2px] border-white h-[50px] ring-0 relative">
+                    <div
+                      id="progress-stuff"
+                      className="w-[440px] mx-auto border-[1.2px] border-white h-[50px] ring-0 relative"
+                    >
                       <div
                         style={{
                           width: (progress < 100 ? progress : 100) * 0.98 + '%',
@@ -314,33 +268,46 @@ function App() {
                   </div>
                   {!isLastPage && (
                     <div className="text-5xl absolute bottom-0 mb-[300px] left-1/2 translate-x-[-50%] whitespace-nowrap text-center w-full font-bold">
-                      <span className="text-[red]">CRIEZ</span> POUR LANCER LE
-                      FILM.
+                      <span className="text-[red]">{redText}</span>
+                      {afterRedText}
                     </div>
                   )}
                 </>
               )}
               <div
-                className={`absolute top-0 w-full ${
-                  isLastPage ? 'mt-[-100px]' : 'mt-[80px]'
+                id="bob"
+                className={`${
+                  isLastPage
+                    ? 'absolute top-0 w-full mt-[-100px]'
+                    : 'absolute top-0 w-full mt-[60px]'
                 }`}
               >
                 <img
-                  className={`mx-auto  ${
-                    !isLastPage ? 'w-[390px]' : 'w-[480px] '
+                  id="scream-logo"
+                  className={`${
+                    !isLastPage
+                      ? 'mx-auto  w-[390px]                   '
+                      : 'mx-auto  w-[490px]                   '
                   }`}
                   src="/scream_compressed.png"
                   alt="scream"
                 />
                 {isLastPage && (
                   <div>
-                    <div className="w-full absolute text-4xl text-center font-bold left-1/2 translate-x-[-50%] mt-[15px]">
-                      NOUVELLE VILLE, NOUVELLES RÈGLES...
+                    <div className="w-full absolute text-5xl text-center font-bold left-1/2 translate-x-[-50%] mt-[15px]">
+                      {endText}
                     </div>
                   </div>
                 )}
-                <div className="text-center font-bold text-3xl mt-[70px]">
-                  PARTAGEZ VOS REACTIONS #SCREAMVI
+                <div
+                  id="foot"
+                  className={
+                    isLastPage
+                      ? `${'text-center font-bold text-3xl mt-[75px]'}`
+                      : `${'text-center font-bold text-3xl mt-[20px]'}`
+                  }
+                >
+                  {footText}
                 </div>
               </div>
             </div>
