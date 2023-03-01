@@ -16,14 +16,14 @@ function App() {
     threshold: 20,
   });
   // const [progressConf, setProgressConf] = useState({
-  //   // dev values
+  // dev values
   //   increment: 1,
   //   quantity: 0,
   //   threshold: 5,
   // });
   const progConfRef = useRef(progressConf);
   const [presText, setPresText] = useState('');
-  const [progress, setProgress] = useState(0);
+  const [progress, setProgress] = useState(100);
   const progressRef = useRef(progress);
 
   const [isAudioStarted, setIsAudioStarted] = useState(false);
@@ -322,7 +322,7 @@ function App() {
               )}
               <div
                 className={`absolute top-0 w-full ${
-                  isLastPage ? 'mt-[-20px]' : 'mt-[80px]'
+                  isLastPage ? 'mt-[-100px]' : 'mt-[80px]'
                 }`}
               >
                 <img
@@ -334,12 +334,12 @@ function App() {
                 />
                 {isLastPage && (
                   <div>
-                    <div className="w-full absolute text-4xl text-center font-bold left-1/2 translate-x-[-50%] mt-[-70px]">
-                      NOUVELLE VILLE, NOUVELLES REGLES...
+                    <div className="w-full absolute text-4xl text-center font-bold left-1/2 translate-x-[-50%] mt-[15px]">
+                      NOUVELLE VILLE, NOUVELLES RÈGLES...
                     </div>
                   </div>
                 )}
-                <div className="text-center font-bold text-3xl">
+                <div className="text-center font-bold text-3xl mt-[70px]">
                   PARTAGEZ VOS REACTIONS #SCREAMVI
                 </div>
               </div>
