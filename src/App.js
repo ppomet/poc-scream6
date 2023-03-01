@@ -1,6 +1,7 @@
 import './App.css';
 import React, { useEffect, useState, useRef } from 'react';
 import VUMeter from './components/Vumeter/Vumeter';
+import logo from './public/scream_compressed.png';
 
 function App() {
   const [audioStream, setAudioStream] = useState(null);
@@ -17,7 +18,7 @@ function App() {
   });
   const progConfRef = useRef(progressConf);
   const [presText, setPresText] = useState('');
-  const [progress, setProgress] = useState(100);
+  const [progress, setProgress] = useState(0);
   const progressRef = useRef(progress);
 
   const [isAudioStarted, setIsAudioStarted] = useState(false);
@@ -289,7 +290,7 @@ function App() {
                       ? 'mx-auto  w-[390px]                   '
                       : 'mx-auto  w-[490px]                   '
                   }`}
-                  src="/scream_compressed.png"
+                  src={logo}
                   alt="scream"
                 />
                 {isLastPage && (

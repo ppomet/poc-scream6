@@ -10,7 +10,7 @@ body {
   font-family: 'UniversCondensedBold';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-image: url(/public/background.png);
+  background-image: url(/src/public/background.png);
   background-size: cover;
   background-position: bottom;
 }

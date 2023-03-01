@@ -3,7 +3,7 @@ module.exports = {
   theme: {
     extend: {
       backgroundImage: {
-        'black-background': "url('/public/black-background.png')",
+        'black-background': "url('/src/public/black-background.png')",
       },
       colors: {},
       screens: {},
