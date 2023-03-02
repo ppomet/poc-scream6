@@ -28,13 +28,14 @@ function App() {
   const [audioCorrection, setAudioCorrection] = useState({
     // prod values
     flatFactor: 0.05, //0.05
-    current: 2, //2
+    current: 1.42, //2
     maxVol: 0.7, //0.7
     offset: 0.1, //0.1
     margin: 0.05, //0.05
   });
 
   let waitFlag = false;
+  let started = false;
   // prod values:
   let volumeThreshold = 0.85; //  0.85
   let progressTimer = 140; // 140
@@ -91,17 +92,23 @@ function App() {
   };
 
   const handleStart = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        mandatory: {
-          googEchoCancellation: 'false',
-          googAutoGainControl: 'false',
-          googNoiseSuppression: 'false',
-          googHighpassFilter: 'false',
+    // debugger;
+    console.log('handlestart');
+    console.log(`started ${started}`);
+    if (!started) {
+      started = true;
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          mandatory: {
+            googEchoCancellation: 'false',
+            googAutoGainControl: 'false',
+            googNoiseSuppression: 'false',
+            googHighpassFilter: 'false',
+          },
         },
-      },
-    });
-    setAudioStream(stream);
+      });
+      setAudioStream(stream);
+    }
   };
 
   useEffect(() => {
@@ -112,6 +119,10 @@ function App() {
         const source = await context.createMediaStreamSource(audioStream);
         setAudioSource(source);
         setIsAudioStarted(true);
+        //---------------------------------------------------------
+        setPresentation(() => 1);
+        startPresentation();
+        //---------------------------------------------------------
       }
     };
     asyncFix();
@@ -165,11 +176,11 @@ function App() {
   };
 
   const handleKeyPress = async (event) => {
-    if (event.key === ' ') {
+    if (event.key === ' ' && !started) {
       if (presentation === 0) {
         await handleStart();
-        setPresentation(() => 1);
-        startPresentation();
+        // setPresentation(() => 1);
+        // startPresentation();
       }
     }
   };
@@ -177,11 +188,11 @@ function App() {
   useEffect(() => {
     window.addEventListener('keydown', handleKeyPress);
 
-    return () => window.removeEventListener('keydown', () => handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
   });
 
   const redText = 'CRIEZ';
-  const afterRedText = ` ${'POUR LANCER LE FILM.'}`;
+  const afterRedText = ` POUR LANCER LE FILM.`;
 
   const footText = 'PARTAGEZ VOS RÉACTIONS #SCREAMVI';
   const endText = 'NOUVELLE VILLE. NOUVELLES RÈGLES.';

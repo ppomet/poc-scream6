@@ -15,13 +15,12 @@ const VUMeter = ({
 
   const autoCorrection = (average, time) => {
     if (time > lastTime + 300) {
-      console.warn('debouncing animationFrame');
     }
     let obj = { ...correctionFactors };
-    console.debug({ obj });
+    console.debug({ ...obj });
     obj.current = 1 / obj.maxVol - obj.offset;
-
     let flatCorrected = (obj.maxVol += obj.flatFactor);
+    console.debug(obj.maxVol, obj.flatFactor);
     let averageCorrected =
       (obj.maxVol + average / 255) / 2 - obj.flatFactor * 1.5;
     console.debug(
@@ -37,11 +36,12 @@ const VUMeter = ({
     } else {
       console.info(
         `last corr maxVol(${parseFloat(obj.maxVol).toFixed(
-          3
-        )} avgFrom last(${parseFloat(average / 255).toFixed(3)} iterations (${
+          4
+        )} avgFrom last(${parseFloat(average / 255).toFixed(4)} iterations (${
           corrIterations + 1
         })`
       );
+      // obj.maxVol = average / 255;
       setCorrIterations((corr) => (corr += 1));
       setAudioCorrection(() => obj);
       setLastTime(() => time);
@@ -62,7 +62,6 @@ const VUMeter = ({
       const average =
         dataArray.reduce((acc, val) => acc + val, 0) / bufferLength;
       volume = (average / 255) * correctionFactors.current;
-      // console.info(`vol(${volume})`);
       if (volume > 1) {
         // console.warn(`volume got to high (${volume})`);
         autoCorrection(average, time);
@@ -79,7 +78,7 @@ const VUMeter = ({
       // debugger;
       //   stopHandler();
     };
-  }, [correctionFactors]);
+  }, [correctionFactors, lastTime]);
 
   const generateView = () => {
     const view = [];
