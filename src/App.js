@@ -191,29 +191,29 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyPress);
   });
 
-  const redText = 'CRIEZ';
-  const afterRedText = ` POUR LANCER LE FILM.`;
+  const redText = 'SCHREIT LOS';
+  const afterRedText = `, UM DEN FILM ZU STARTEN.`;
 
-  const footText = 'PARTAGEZ VOS RÉACTIONS #SCREAMVI';
-  const endText = 'NOUVELLE VILLE. NOUVELLES RÈGLES.';
+  const footText = 'TEILT EUREN SCHREI #SCREAMVI';
+  const endText = 'NEUES LEBEN. NEUE SPIELREGELN.';
 
   const firstPageTexts = [
-    'Préparez vos cordes vocales.',
-    'Vous allez bientôt vivre une expérience inédite.',
+    `MACHT EURE STIMMBÄNDER BEREIT !`,
+    'GLEICH MACHT IHR EINE GANZ NEUE ERFAHRUNG.',
   ];
 
   const secondPageTexts = [
-    'FAITES TREMBLER LA SALLE...',
-    'CRIEZ COMME SI VOTRE VIE EN DÉPENDAIT !',
-    'C’EST ÇA QUE VOUS APPELEZ CRIER ?',
-    'LÂCHEZ-VOUS !',
-    'ON ENTEND LES MOUCHES VOLER...',
-    'C’EST ÇA VOTRE MAXIMUM ?',
-    'ON NE VA PAS Y PASSER LA NUIT !',
-    'VOUS VOULEZ VRAIMENT VOIR LE FILM ?',
-    'VOUS N’AVEZ PLUS DE VOIX ?',
-    'BAH ALORS, ON FAIBLIT ?',
-    'LE FILM PEUT COMMENCER.',
+    'LASST DEN SAAL MIT EUREM SCHREI ZITTERN...',
+    'SCHREIT SO LAUT IHR KÖNNT !',
+    'DAS NENNT IHR LAUT SCHREIEN ?',
+    'SCHREIT UM EUER LEBEN! SO LAUT IHR KÖNNT !',
+    'ECHT ?! SO SCHREIT IHR UM EUER LEBEN ?',
+    'DAS IST EUER MAXIMUM? ERNSTHAFT ?',
+    'OK, LASST UNS KEINE ZEIT VERGEUDEN...',
+    'WOLLT IHR JETZT DEN FILM SEHEN ?',
+    'HABT IHR KEINE STIMME MEHR ?',
+    'ODER SCHWÄCHELT IHR ?',
+    'DER FILM KANN JETZT STARTEN !',
   ];
 
   // {isLastPage ? `${''}` : `${''}` }
